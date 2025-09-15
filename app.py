@@ -16,7 +16,7 @@ from typing import Tuple, List, Dict, Optional
 import logging
 import warnings
 warnings.filterwarnings('ignore')
-
+import re
 import chardet
 import streamlit as st
 import plotly.express as px
@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 # Page configuration
 st.set_page_config(
-    page_title="AI-Driven BI Predictor | PwC TAC Portfolio",
+    page_title="AI-Driven BI Predictor",
     page_icon="🎯",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -48,7 +48,7 @@ st.set_page_config(
 st.markdown("""
 <style>
     .main-header {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(90deg, #000000 0%, #764ba2 100%);
         color: white;
         padding: 2rem;
         border-radius: 15px;
@@ -665,7 +665,6 @@ def create_prediction_interface(predictor: BusinessIntelligencePredictor, df: pd
                 )
                 prediction_data[date_features[0]] = pd.to_datetime(prediction_date)
             else:
-                # Fallback if no date column
                 prediction_date = st.date_input(
                     "Prediction Date",
                     value=datetime.today() + timedelta(days=30),
@@ -675,57 +674,68 @@ def create_prediction_interface(predictor: BusinessIntelligencePredictor, df: pd
                 prediction_data['date'] = pd.to_datetime(prediction_date)
         
             st.subheader("🔢 Input Features (1)")
-            # Add first half of features
             feature_subset = numeric_features[:len(numeric_features)//2] + categorical_features[:len(categorical_features)//2]
             for feature in feature_subset:
-                if feature in numeric_features:
-                    default_val = float(df[feature].median()) if not df[feature].isna().all() else 0.0
-                    prediction_data[feature] = st.number_input(
-                        feature.replace('_', ' ').title(),
-                        min_value=float(df[feature].min()) if not df[feature].isna().all() else 0.0,
-                        max_value=float(df[feature].max()) if not df[feature].isna().all() else 10000.0,
-                        value=default_val,
-                        step=0.1 if df[feature].dtype == float else 1.0
-                    )
-                elif feature in categorical_features:
-                    unique_vals = sorted(df[feature].dropna().unique())
-                    if unique_vals:
-                        prediction_data[feature] = st.selectbox(
+                try:
+                    if feature in numeric_features:
+                        # Use try-except to handle non-numeric data
+                        default_val = float(df[feature].median()) if not df[feature].isna().all() else 0.0
+                        min_val = float(df[feature].min()) if not df[feature].isna().all() else 0.0
+                        max_val = float(df[feature].max()) if not df[feature].isna().all() else 10000.0
+                        prediction_data[feature] = st.number_input(
                             feature.replace('_', ' ').title(),
-                            options=unique_vals
+                            min_value=min_val,
+                            max_value=max_val,
+                            value=default_val,
+                            step=0.1 if df[feature].dtype == float else 1.0
                         )
-                    else:
-                        prediction_data[feature] = st.text_input(
-                            feature.replace('_', ' ').title(),
-                            value="Unknown"
-                        )
+                    elif feature in categorical_features:
+                        unique_vals = sorted(df[feature].dropna().unique())
+                        if unique_vals:
+                            prediction_data[feature] = st.selectbox(
+                                feature.replace('_', ' ').title(),
+                                options=unique_vals
+                            )
+                        else:
+                            prediction_data[feature] = st.text_input(
+                                feature.replace('_', ' ').title(),
+                                value="Unknown"
+                            )
+                except Exception as e:
+                    st.warning(f"Could not process input for {feature}: {str(e)}")
+                    prediction_data[feature] = 0 if feature in numeric_features else "Unknown"
         
         with col2:
             st.subheader("🔢 Input Features (2)")
-            # Add second half of features
             feature_subset = numeric_features[len(numeric_features)//2:] + categorical_features[len(categorical_features)//2:]
             for feature in feature_subset:
-                if feature in numeric_features:
-                    default_val = float(df[feature].median()) if not df[feature].isna().all() else 0.0
-                    prediction_data[feature] = st.number_input(
-                        feature.replace('_', ' ').title(),
-                        min_value=float(df[feature].min()) if not df[feature].isna().all() else 0.0,
-                        max_value=float(df[feature].max()) if not df[feature].isna().all() else 10000.0,
-                        value=default_val,
-                        step=0.1 if df[feature].dtype == float else 1.0
-                    )
-                elif feature in categorical_features:
-                    unique_vals = sorted(df[feature].dropna().unique())
-                    if unique_vals:
-                        prediction_data[feature] = st.selectbox(
+                try:
+                    if feature in numeric_features:
+                        default_val = float(df[feature].median()) if not df[feature].isna().all() else 0.0
+                        min_val = float(df[feature].min()) if not df[feature].isna().all() else 0.0
+                        max_val = float(df[feature].max()) if not df[feature].isna().all() else 10000.0
+                        prediction_data[feature] = st.number_input(
                             feature.replace('_', ' ').title(),
-                            options=unique_vals
+                            min_value=min_val,
+                            max_value=max_val,
+                            value=default_val,
+                            step=0.1 if df[feature].dtype == float else 1.0
                         )
-                    else:
-                        prediction_data[feature] = st.text_input(
-                            feature.replace('_', ' ').title(),
-                            value="Unknown"
-                        )
+                    elif feature in categorical_features:
+                        unique_vals = sorted(df[feature].dropna().unique())
+                        if unique_vals:
+                            prediction_data[feature] = st.selectbox(
+                                feature.replace('_', ' ').title(),
+                                options=unique_vals
+                            )
+                        else:
+                            prediction_data[feature] = st.text_input(
+                                feature.replace('_', ' ').title(),
+                                value="Unknown"
+                            )
+                except Exception as e:
+                    st.warning(f"Could not process input for {feature}: {str(e)}")
+                    prediction_data[feature] = 0 if feature in numeric_features else "Unknown"
         
         with col3:
             st.subheader("🎯 Strategy Inputs")
@@ -802,7 +812,6 @@ def create_prediction_interface(predictor: BusinessIntelligencePredictor, df: pd
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                # ROI for any numeric feature representing cost (e.g., marketing_spend, cost)
                 cost_features = [f for f in numeric_features if 'spend' in f.lower() or 'cost' in f.lower()]
                 if cost_features:
                     cost_feature = cost_features[0]
@@ -817,7 +826,7 @@ def create_prediction_interface(predictor: BusinessIntelligencePredictor, df: pd
                 st.metric("Model Confidence", f"{model_confidence:.1%}")
             
             with col3:
-                vs_average = ((prediction / df[target_column].mean()) - 1) * 100 if target_column in df.columns else 0
+                vs_average = ((prediction / df[target_column].mean()) - 1) * 100 if target_column in df.columns and not df[target_column].isna().all() else 0
                 st.metric(f"vs Average {target_column.title()}", f"{vs_average:+.1f}%")
         
         except Exception as e:
@@ -867,49 +876,77 @@ def display_column_info(df: pd.DataFrame):
             st.write(f"- **{col}**: {unique_count} unique values")
 
 # Updated main function section for better error handling
-def handle_dataset_loading_and_validation(data_source, uploaded_file=None):
-    """Handle dataset loading with proper error handling and column detection"""
+def handle_dataset_loading_and_validation(data_source: str, uploaded_file) -> tuple[pd.DataFrame, list, str]:
+    """Load and validate dataset, cleaning currency symbols and malformed numeric columns"""
+    df = None
+    errors = []
+    suggested_target = None
     
     try:
-        # Load data
+        predictor = BusinessIntelligencePredictor()
         if data_source == "Retail Sales Dataset":
-            df, errors = load_data_with_validation("data/retail_sales.csv")
-            if df is not None:
-                st.success("✅ Retail Sales dataset loaded successfully!")
-                return df, errors, "sales"  # Default target for demo data
-            else:
-                # Fallback to generated data
-                predictor = BusinessIntelligencePredictor()
-                df = predictor.generate_sample_data()
-                st.success("✅ Demo dataset generated successfully!")
-                return df, [], "sales"
-                
-        else:  # Custom upload
-            if uploaded_file is not None:
-                df, errors = load_data_with_validation("", uploaded_file)
-                if df is not None:
-                    st.success(f"✅ Custom dataset uploaded successfully! ({len(df):,} rows, {len(df.columns)} columns)")
-                    
-                    # Display column information
-                    display_column_info(df)
-                    
-                    # Auto-detect target column
-                    suggested_target = detect_target_column(df)
-                    st.info(f"💡 Suggested target column: **{suggested_target}**")
-                    
-                    return df, errors, suggested_target
-                else:
-                    st.error("Failed to load uploaded file")
-                    for error in errors:
-                        st.error(error)
-                    return None, errors, None
-            else:
-                st.info("👆 Please upload a CSV file to continue")
-                return None, ["No file uploaded"], None
-                
+            df = predictor.generate_sample_data()
+        elif uploaded_file is not None:
+            df = pd.read_csv(uploaded_file)
+        
+        if df is None:
+            errors.append("No dataset selected or uploaded")
+            return None, errors, suggested_target
+        
+        # Clean numeric columns
+        for col in df.columns:
+            if df[col].dtype == 'object':
+                # Check if column contains currency symbols or can be numeric
+                sample_values = df[col].dropna().head(5)
+                if sample_values.empty:
+                    continue
+                # Try to convert strings to numeric after cleaning currency symbols
+                try:
+                    cleaned_series = df[col].str.replace(r'[₹$,]', '', regex=True).str.strip()
+                    cleaned_series = cleaned_series.replace('', np.nan)  # Replace empty strings with NaN
+                    numeric_series = pd.to_numeric(cleaned_series, errors='coerce')
+                    if numeric_series.notna().sum() > len(df) * 0.5:  # At least 50% convertible
+                        df[col] = numeric_series
+                        logger.info(f"Cleaned column {col} to numeric")
+                    else:
+                        logger.warning(f"Column {col} could not be fully converted to numeric")
+                except Exception as e:
+                    logger.warning(f"Failed to clean column {col}: {str(e)}")
+        
+        # Convert date columns
+        for col in df.columns:
+            if df[col].dtype == 'object' and col.lower() in ['date', 'transaction_date', 'order_date']:
+                try:
+                    df[col] = pd.to_datetime(df[col])
+                except:
+                    errors.append(f"Could not convert column '{col}' to datetime")
+        
+        # Validate dataset
+        if len(df) < 10:
+            errors.append("Dataset too small (minimum 10 records)")
+        if len(df.columns) < 2:
+            errors.append("Dataset must have at least 2 columns")
+        
+        # Detect suggested target
+        suggested_target = detect_target_column(df)
+        if suggested_target is None or suggested_target not in df.columns:
+            errors.append("Could not detect a suitable target column")
+        
+        # Display column info
+        display_column_info(df)
+        
+        # Additional validation for target
+        if suggested_target and suggested_target in df.columns:
+            if df[suggested_target].dtype not in ['int64', 'float64']:
+                errors.append(f"Target column '{suggested_target}' must be numeric")
+            if df[suggested_target].isna().sum() / len(df) > 0.5:
+                errors.append(f"Target column '{suggested_target}' has too many missing values")
+        
+        return df, errors, suggested_target
+    
     except Exception as e:
-        st.error(f"Error in dataset loading: {str(e)}")
-        return None, [str(e)], None
+        errors.append(f"Failed to load dataset: {str(e)}")
+        return None, errors, suggested_target
 
 # Updated sidebar configuration section
 def create_sidebar_config(df, suggested_target="sales"):

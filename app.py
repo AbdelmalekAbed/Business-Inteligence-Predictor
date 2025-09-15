@@ -1,12 +1,3 @@
-"""
-AI-Driven Business Intelligence Predictor
-=========================================
-A comprehensive machine learning application for business forecasting and analytics.
-Built for enterprise-level data science applications with focus on retail sales prediction.
-
-Author: Data Science Portfolio Project
-Target: PwC Technology Acceleration Center (TAC) Internship Application
-"""
 
 import pandas as pd
 import numpy as np

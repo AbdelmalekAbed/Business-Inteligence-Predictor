@@ -294,12 +294,10 @@ streamlit run app.py
 
 ## 📧 **Contact & Portfolio**
 
-**Developer**: [Your Name]  
-**Email**: [your.email@example.com]  
-**LinkedIn**: [linkedin.com/in/yourprofile]  
-**GitHub**: [github.com/yourusername]  
-
-**Portfolio Project**: Data Science & Machine Learning Engineering
+**Developer**: Abdelmalek Abed   
+**Email**: abdelmalek.abed321@gmail.com  
+**LinkedIn**: https://www.linkedin.com/in/abdelmalek-abed-613493289/  
+**GitHub**: [AbdelmalekAbed ](https://github.com/AbdelmalekAbed)
 
 ---
 
@@ -307,15 +305,13 @@ streamlit run app.py
 
 ### **What Makes This Project Stand Out**
 
-1. **Production-Ready Architecture**: Enterprise-grade code with comprehensive error handling, logging, and monitoring
-2. **Advanced ML Pipeline**: Multiple algorithms with automated preprocessing, feature engineering, and hyperparameter tuning  
-3. **Business-Focused**: Translates complex ML insights into actionable business recommendations
-4. **Interactive Analytics**: Real-time predictions, scenario analysis, and Monte Carlo risk assessment
-5. **Professional UI/UX**: Modern Streamlit interface with custom CSS and intuitive workflows
+1. **Advanced ML Pipeline**: Multiple algorithms with automated preprocessing, feature engineering, and hyperparameter tuning  
+2. **Business-Focused**: Translates complex ML insights into actionable business recommendations
+3. **Interactive Analytics**: Real-time predictions, scenario analysis, and Monte Carlo risk assessment
+4. **Professional UI/UX**: Modern Streamlit interface with custom CSS and intuitive workflows
 
 ### **Technical Achievements**
 
-- **2400+ Lines of Code**: Comprehensive implementation with modular design
 - **Advanced Feature Engineering**: Time-series analysis, business metrics, seasonal patterns
 - **Robust Data Processing**: Multi-encoding support, intelligent type inference, outlier detection
 - **Performance Optimization**: Parallel processing, data sampling, progress indicators
